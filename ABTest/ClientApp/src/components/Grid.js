@@ -9,6 +9,8 @@ export class Grid extends Component {
     this.state = {
       users: [],
       usersPage: 0,
+      totalUsersPages: 0,
+      usersPageSize: 10,
       columns: [
         { field: 'id', headerName: 'Id', width: 200, editable: false },
         {
@@ -30,15 +32,22 @@ export class Grid extends Component {
     this.addRow = this.addRow.bind(this);
     this.onGridRowsUpdated = this.onGridRowsUpdated.bind(this);
     this.getUsers = this.getUsers.bind(this);
+    this.setPage = this.setPage.bind(this);
   }
 
   getUsers = () => {
     fetch(`/api/users/GetAllUsers/?pageNumber=${this.state.usersPage}`)
       .then((response) => {
+
         response.json()
-          .then(data => this.setState({
-            users: data
-          }));
+          .then(data => {
+            var pagination = JSON.parse(response.headers.get("x-pagination"));
+            this.setState({
+              totalUsersPages: pagination.TotalCount,
+              usersPageSize: pagination.PageSize,
+              users: data
+            })
+          });
 
       });
   }
@@ -129,7 +138,10 @@ export class Grid extends Component {
   }
 
   setPage = (page) => {
-    this.setState({ usersPage: page })
+    this.setState({ usersPage: page }, () => {
+      this.getUsers();
+    });
+
   }
 
   componentDidMount() {
@@ -146,10 +158,11 @@ export class Grid extends Component {
           </div>
 
           <DataGrid rows={this.state.users} columns={this.state.columns}
-            rowsPerPageOptions={[20]}
-            paginationMode="server"
             onEditCellChange={this.onGridRowsUpdated}
+            pageSize={this.state.usersPageSize}
+            paginationMode="server"
             page={this.state.usersPage}
+            rowCount={this.state.totalUsersPages}
             onPageChange={(params) => {
               this.setPage(params.page);
             }} />

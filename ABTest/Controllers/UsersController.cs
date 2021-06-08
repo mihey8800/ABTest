@@ -37,7 +37,7 @@ namespace ABTest.Controllers
         /// </summary>
         /// <returns>List of Users</returns>
         /// <response code="200">Successful API response</response>
-        [Route("GetAllUsers/{page}")]
+        [Route("GetAllUsers")]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers([FromQuery] UserParameters userParameters,
             CancellationToken cancellationToken = default)
