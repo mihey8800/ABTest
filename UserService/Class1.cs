@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Models
+namespace UserService
 {
     public class Class1
     {

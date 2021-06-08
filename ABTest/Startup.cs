@@ -1,10 +1,17 @@
+using System.Collections.Generic;
+using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Models.Contexts;
+using Models.Repositories;
+using Models.Shared;
+using Services;
+using Services.UserServices;
 
 namespace ABTest
 {
@@ -20,8 +27,10 @@ namespace ABTest
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddControllersWithViews();
+            services.AddDbContextFactory<PostgresSqlContext>(o=>o.UseNpgsql(Configuration["PostgresSql:ConnectionString"]));
+            services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IService<CalculateRollingRetentionContext, IEnumerable<UserRetention>>, CalculateRollingRetentionService>();
+            services.AddControllersWithViews().AddNewtonsoftJson(); ;
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -31,7 +40,7 @@ namespace ABTest
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IUserRepository db )
         {
             if (env.IsDevelopment())
             {
@@ -44,6 +53,8 @@ namespace ABTest
                 app.UseHsts();
             }
 
+            db.Migrate(new CancellationToken()).GetAwaiter().GetResult();
+   
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
@@ -52,11 +63,9 @@ namespace ABTest
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute();
             });
-
+            
             app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
@@ -66,6 +75,7 @@ namespace ABTest
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
+            
         }
     }
 }

@@ -1,0 +1,61 @@
+body {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Ubuntu';
+}
+
+main {
+  flex: auto;
+}
+
+.footer {
+  flex-shrink: 0;
+}
+
+.grid-wrapper {
+  height: 300px;
+  width: 605px;
+}
+
+.navbar-light .navbar-brand {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 23px;
+  text-transform: uppercase;
+  color: #5D6E97;
+}
+
+.MuiDataGrid-cell {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 16px;
+
+  color: #5D6E97 !important;
+}
+
+.MuiDataGrid-columnHeaderTitle,
+.MuiTypography-root,
+.makeStyles-caption-2,
+.MuiTypography-body2,
+.makeStyles-caption-2[id],
+.MuiSelect-select.MuiSelect-select,
+.MuiTablePagination-caption,
+.MuiDataGrid-selectedRowCount{
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 16px;
+  color: #5D6E97 !important;
+}
+
+
+
+.MuiDataGrid-iconSeparator {
+  display: none !important;
+}
