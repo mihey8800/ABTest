@@ -29,8 +29,9 @@ namespace ABTest
         {
             services.AddDbContextFactory<PostgresSqlContext>(o=>o.UseNpgsql(Configuration["PostgresSql:ConnectionString"]));
             services.AddTransient<IUserRepository, UserRepository>();
-            services.AddTransient<IService<CalculateRollingRetentionContext, IEnumerable<UserRetention>>, CalculateRollingRetentionService>();
-            services.AddControllersWithViews().AddNewtonsoftJson(); ;
+            services.AddTransient<IService<CalculateRollingRetentionXdayContext, IEnumerable<RollingRetentionXDay>>, RollingRetentionXdayService>();
+            services.AddTransient<IService<CalculateUserLifetimeContext, IEnumerable<UserLifetime>>, LifetimeService>();
+            services.AddControllersWithViews().AddNewtonsoftJson();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>

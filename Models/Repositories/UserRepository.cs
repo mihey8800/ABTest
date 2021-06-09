@@ -31,6 +31,12 @@ namespace Models.Repositories
             return PagedList<User>.ToPagedList(db.Users.OrderBy(o => o.Id), userParameters.PageNumber, userParameters.PageSize);
         }
 
+        public async Task<IEnumerable<User>> GetUserList(CancellationToken cancellationToken)
+        {
+            await using var db = _dbFactory.CreateDbContext();
+            return await db.Users.ToListAsync(cancellationToken);
+        }
+
         public async Task<User> GetUser(int id, CancellationToken cancellationToken)
         {
             await using var db = _dbFactory.CreateDbContext();

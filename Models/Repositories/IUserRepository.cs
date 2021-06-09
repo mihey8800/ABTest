@@ -9,6 +9,7 @@ namespace Models.Repositories
     public interface IUserRepository : IRepository<User>
     {
         Task<PagedList<User>> GetUserList(CancellationToken cancellationToken, UserParameters userParameters);
+        Task<IEnumerable<User>> GetUserList(CancellationToken cancellationToken);
         Task<User> GetUser(int id, CancellationToken cancellationToken);
         Task<User> CreateUser(User item, CancellationToken cancellationToken);
         Task CreateUsers(IEnumerable<User> items, CancellationToken cancellationToken);

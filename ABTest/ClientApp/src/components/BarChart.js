@@ -1,68 +1,55 @@
 import React, { Component } from 'react';
-
+import { UserLiveTime } from "./UserLiveTime";
+import { RollingRetentionXDay } from "./RollingRetentionXDay";
 
 export class BarChart extends Component {
   static displayName = BarChart.name;
 
   constructor(props) {
     super(props);
-    let minDate = new Date();
-    minDate.setDate(minDate.getDate() - 7);
-
+    this.rollingRetentionXDay = React.createRef();
+    this.userLiveTime = React.createRef();
     this.state = {
-      chartData: [],
-
-      yAxis: {
-        minimum: 0,
-        maximum: 25,
-        interval: 2,
-        title: "Live Users"
+      options: {
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
+            },
+          ],
+        },
       },
 
-      xAxis: {
-        valueType: "DateTime",
-        intervalType: "Days",
-        interval: 1,
-        minimum: minDate,
-        maximum: new Date(),
-        labelFormat: "dd/MM/yyyy",
-        title: "Days",
-      },
+      data: {}
+
     }
   }
 
-  getUserRetentions = () => {
-    // get last 7 days user retentions
-    fetch(`/api/users/GetUsersRollingRetentions/7`)
-      .then((res) => { console.log(res); res.json() })
-      .then((data) => {
-        data.forEach(element => {
-          element.day = new Date(element.day)
-        });
-
-        this.setState({
-          chartData: data
-        });
-
-        console.log(this.state.chartData);
-      });
+  calculateRetentions = () => {
+    this.rollingRetentionXDay.current.calculateRetentions();
+    this.userLiveTime.current.calculateRetentions();
   }
 
   render() {
-    return (<div></div>)
-    /*
-    return (
-      <div>
-        
-        <ChartComponent primaryXAxis={this.state.xAxis} primaryYAxis={this.state.yAxis} title="User Retentions last 7 days">
-          <Inject services={[BarSeries, Legend, Tooltip, DataLabel, Category, DateTime]} />
-          <SeriesCollectionDirective>
-            <SeriesDirective dataSource={this.state.chartData} xName="day" yName="liveUsers" type="Bar">
-            </SeriesDirective>
-          </SeriesCollectionDirective>
-        </ChartComponent>
-        <button className="btn btn-primary mt-2" onClick={this.getUserRetentions}>Calculate</button>
+    return (<div className='p-5'>
+      <div className='d-flex align-items-center justify-content-center mt-5'>
+        <button
+          type='button'
+          className='btn btn-primary float-end'
+          onClick={this.calculateRetentions}>
+          Calculate Retentions
+        </button>
       </div>
-    );*/
+
+      <div className='p-5 pt-3'>
+        <UserLiveTime ref={this.userLiveTime} />
+      </div>
+      <div className='p-5 pt-3'>
+        <RollingRetentionXDay ref={this.rollingRetentionXDay} daysToCount={7} />
+      </div>
+
+    </div>)
   }
 }

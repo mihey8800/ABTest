@@ -20,11 +20,13 @@ namespace Models.Entities
     {
         [Key]
         public int Id { get; set; }
+        [Required]
         [ConcurrencyCheck]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0.dd.MM.yyyy}", ApplyFormatInEditMode = true)]
         [JsonConverter(typeof(OnlyDateConverter))]
         public DateTime RegistrationDate { get; set; }
+        [Required]
         [JsonConverter(typeof(OnlyDateConverter))]
         [ConcurrencyCheck]
         [DataType(DataType.Date)]

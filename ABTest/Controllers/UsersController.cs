@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -19,15 +20,18 @@ namespace ABTest.Controllers
     [Route("api/Users")]
     public class UsersController : Controller
     {
-        private readonly IService<CalculateRollingRetentionContext, IEnumerable<UserRetention>> _rollingRetention;
+        private readonly IService<CalculateRollingRetentionXdayContext, IEnumerable<RollingRetentionXDay>> _rollingRetentionXDay;
+        private readonly IService<CalculateUserLifetimeContext, IEnumerable<UserLifetime>> _rollingRetention7Day;
         private readonly IUserRepository _usersRepository;
         private readonly IConfiguration _configuration;
 
         public UsersController(
-            IService<CalculateRollingRetentionContext, IEnumerable<UserRetention>> rollingRetention,
+            IService<CalculateRollingRetentionXdayContext, IEnumerable<RollingRetentionXDay>> rollingRetentionXDay,
+            IService<CalculateUserLifetimeContext, IEnumerable<UserLifetime>> rollingRetention7Day,
             IUserRepository userRepository, IConfiguration configuration)
         {
-            _rollingRetention = rollingRetention;
+            _rollingRetentionXDay = rollingRetentionXDay;
+            _rollingRetention7Day = rollingRetention7Day;
             _usersRepository = userRepository;
             _configuration = configuration;
         }
@@ -66,41 +70,68 @@ namespace ABTest.Controllers
         }
 
         /// <summary>
-        /// Get calculated User Rolling X Days Retentions
+        /// Get calculated User Rolling 7 Days Retentions
         /// </summary>
-        /// <param name="userParameters"></param>
-        /// <param name="days"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>List of Rolling X Days Retentions</returns>
-        [Route("GetUsersRollingRetentions/{days}")]
+        [Route("GetUsersUsersLiveTime")]
         [HttpGet]
-        public async Task<IActionResult> GetUsersRollingRetentions([FromQuery] UserParameters userParameters, int days,
-            CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetUsersUsersLiveTime(CancellationToken cancellationToken = default)
         {
             try
             {
-                var users = await _usersRepository.GetUserList(cancellationToken, userParameters);
+                var users = await _usersRepository.GetUserList(cancellationToken);
                 if (users == null)
                 {
                     return BadRequest(null);
                 }
 
-                var result = await _rollingRetention.ExecuteAsync(new CalculateRollingRetentionContext
+                var usersList = users.ToList();
+                var result = _rollingRetention7Day.Execute(new CalculateUserLifetimeContext
                 {
-                    DaysCount = days,
-                    Users = users,
+                    Users = usersList,
                     CancellationToken = cancellationToken
                 });
-                var metadata = new
+
+                return Json(result);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
+            }
+        }
+
+
+        /// <summary>
+        /// Get calculated User Rolling 7 Days Retentions
+        /// </summary>
+        /// <param name="daysCount"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>List of Rolling X Days Retentions</returns>
+        [Route("GetUsersRollingRetentionsXDay/{daysCount}")]
+        [HttpGet]
+        public async Task<IActionResult> GetUsersRollingRetentionsXDay(int daysCount, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (daysCount <= 0)
                 {
-                    users.TotalCount,
-                    users.PageSize,
-                    users.CurrentPage,
-                    users.TotalPages,
-                    users.HasNext,
-                    users.HasPrevious
-                };
-                Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+                    return Json(new List<RollingRetentionXDay>());
+                }
+                var users = await _usersRepository.GetUserList(cancellationToken);
+                if (users == null)
+                {
+                    return BadRequest(null);
+                }
+
+                var usersList = users.ToList();
+                var result = await _rollingRetentionXDay.ExecuteAsync(new CalculateRollingRetentionXdayContext
+                {
+                    DaysCount = daysCount,
+                    Users = usersList,
+                    CancellationToken = cancellationToken
+                });
+
                 return Json(result);
             }
             catch (Exception e)

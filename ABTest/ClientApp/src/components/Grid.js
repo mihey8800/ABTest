@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
+import { formattedDate } from '../helpers/formattedDate'
 import Noty from 'noty';
 export class Grid extends Component {
   static displayName = Grid.name;
@@ -84,17 +85,6 @@ export class Grid extends Component {
 
   }
 
-  formattedDate = (d = new Date()) => {
-    let month = String(d.getMonth() + 1);
-    let day = String(d.getDate());
-    const year = String(d.getFullYear());
-
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-
-    return `${day}.${month}.${year}`;
-  }
-
   addRow = () => {
     var ids = this.state.users.map(a => a.id);
 
@@ -109,8 +99,8 @@ export class Grid extends Component {
 
     var newUser = {
       id: newId(),
-      registrationDate: this.formattedDate(),
-      lastActivityDate: this.formattedDate(),
+      registrationDate: formattedDate(),
+      lastActivityDate: formattedDate(),
       created: true
     };
 
@@ -128,7 +118,7 @@ export class Grid extends Component {
     var rows = this.state.users.slice();
     var user = rows.filter(item => item.id === e.id)[0];
     if (user && e.field && e.props && e.props.value) {
-      user[e.field] = this.formattedDate(e.props.value);
+      user[e.field] = formattedDate(e.props.value);
       user.edited = true;
     }
 
