@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
@@ -12,6 +13,8 @@ using Models.Repositories;
 using Models.Shared;
 using Services;
 using Services.UserServices;
+using StackExchange.Profiling;
+using StackExchange.Profiling.Storage;
 
 namespace ABTest
 {
@@ -38,6 +41,10 @@ namespace ABTest
             {
                 configuration.RootPath = "ClientApp/build";
             });
+            services.AddMiniProfiler(options =>
+            {
+                // ...
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,8 +60,8 @@ namespace ABTest
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
-            db.Migrate(new CancellationToken()).GetAwaiter().GetResult();
+            app.UseMiniProfiler();
+            db.Migrate(CancellationToken.None).GetAwaiter().GetResult();
    
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -64,6 +71,11 @@ namespace ABTest
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapMiniProfilerIncludes(new RenderOptions
+                {
+                    StartHidden = true,
+                    PopupToggleKeyboardShortcut = "Ctrl+m",
+                });
                 endpoints.MapDefaultControllerRoute();
             });
             
