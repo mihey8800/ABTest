@@ -153,6 +153,10 @@ namespace ABTest.Controllers
         {
             try
             {
+                if (!TryValidateModel(user))
+                {
+                    return BadRequest();
+                }
                 var updatedUser = await _usersRepository.UpdateUser(user, cancellationToken);
                 if (updatedUser == null)
                 {
@@ -181,6 +185,10 @@ namespace ABTest.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest();
+                }
                 var usersToUpdate = users.Where(a => a.Id != 0).ToList();
                 if (usersToUpdate.Count > 0)
                 {

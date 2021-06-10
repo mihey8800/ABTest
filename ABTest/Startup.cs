@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using FoolProof.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
@@ -35,7 +36,7 @@ namespace ABTest
             services.AddTransient<IService<CalculateRollingRetentionXdayContext, IEnumerable<RollingRetentionXDay>>, RollingRetentionXdayService>();
             services.AddTransient<IService<CalculateUserLifetimeContext, IEnumerable<UserLifetime>>, LifetimeService>();
             services.AddControllersWithViews().AddNewtonsoftJson();
-
+            services.AddFoolProof();
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {

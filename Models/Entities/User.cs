@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FoolProof.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -25,7 +22,10 @@ namespace Models.Entities
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0.dd.MM.yyyy}", ApplyFormatInEditMode = true)]
         [JsonConverter(typeof(OnlyDateConverter))]
+        [LessThanOrEqualTo("LastActivityDate")]
         public DateTime RegistrationDate { get; set; }
+
+        [GreaterThanOrEqualTo("RegistrationDate")]
         [Required]
         [JsonConverter(typeof(OnlyDateConverter))]
         [ConcurrencyCheck]

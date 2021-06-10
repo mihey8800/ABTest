@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,20 +91,57 @@ namespace Models.Repositories
             }
         }
 
-        public async Task UpdateUsers(IEnumerable<User> items, CancellationToken cancellationToken)
+        public async Task<bool> UpdateUsers(IEnumerable<User> items, CancellationToken cancellationToken)
         {
             try
             {
+                
                 await using var db = _dbFactory.CreateDbContext();
-
-
-                db.Users.UpdateRange(items);
+                var newItems = items.ToList();
+                var itemsToUpdate = db.Users.Where(x => newItems.Select(s => s.Id).Contains(x.Id)).ToList();
+                foreach (var user in itemsToUpdate)
+                {
+                    var newItem = newItems.FirstOrDefault(a => a.Id == user.Id);
+                    if (newItem == null) continue;
+                    user.LastActivityDate = newItem.LastActivityDate;
+                    user.RegistrationDate = newItem.RegistrationDate;
+                }
+                
 
                 await db.SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    if (entry.Entity is User)
+                    {
+                        try
+                        {
+                            await using var db = _dbFactory.CreateDbContext();
+                            var user = db.Users.Update((User)entry.Entity);
+                            db.SaveChanges();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                        
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
             catch
             {
                 //here will be good to add logging
+                return false;
             }
         }
 

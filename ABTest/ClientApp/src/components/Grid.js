@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
 import { formattedDate } from '../helpers/formattedDate'
-import Noty from 'noty';
+import 'react-notifications/lib/notifications.css';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+
 export class Grid extends Component {
   static displayName = Grid.name;
 
@@ -69,17 +71,28 @@ export class Grid extends Component {
 
       })
         .then((res) => {
-
-          new Noty({
-            text: "Information saved",
-            type: "success"
-          });
-          this.getUsers(this.state.usersPage);
+          if (res.ok) {
+            NotificationManager.success("Information saved")
+            this.getUsers(this.state.usersPage);
+          }
+          else{
+            NotificationManager.error("Information not saved. Data is invalid. Try to change.")
+            res.json().then(data => {
+              if (data.errors)
+              {
+                Object.keys(data.errors).forEach(item => {
+                  NotificationManager.error(item + " " + data.errors[item]);
+                });
+              }
+             
+            });
+            
+          }
+          
         })
-        .catch((res) => new Noty({
-          text: res,
-          type: "error"
-        }).show());
+        .catch((res) => { 
+          NotificationManager.error(res) }
+        );
     }
 
 
@@ -157,6 +170,7 @@ export class Grid extends Component {
               this.setPage(params.page);
             }} />
         </div>
+        <NotificationContainer />
       </div>
       /*<GridComponent dataSource={this.state.users} allowPaging={true} allowSorting={true}
       pageSettings={this.state.grid.pageSettings} editSettings={this.state.grid.editSettings} 

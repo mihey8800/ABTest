@@ -14,7 +14,7 @@ namespace Models.Repositories
         Task<User> CreateUser(User item, CancellationToken cancellationToken);
         Task CreateUsers(IEnumerable<User> items, CancellationToken cancellationToken);
         Task<User> UpdateUser(User item, CancellationToken cancellationToken);
-        Task UpdateUsers(IEnumerable<User> items, CancellationToken cancellationToken);
+        Task<bool> UpdateUsers(IEnumerable<User> items, CancellationToken cancellationToken);
         Task<bool> DeleteUser(int id, CancellationToken cancellationToken);
     }
 }
