@@ -1,7 +1,7 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using StackExchange.Profiling;
+using System.Text;
 
 namespace ABTest
 {

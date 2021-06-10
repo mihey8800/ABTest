@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using FoolProof.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,7 +12,9 @@ using Models.Shared;
 using Services;
 using Services.UserServices;
 using StackExchange.Profiling;
-using StackExchange.Profiling.Storage;
+using System.Collections.Generic;
+using System.Threading;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace ABTest
 {
@@ -31,7 +30,7 @@ namespace ABTest
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContextFactory<PostgresSqlContext>(o=>o.UseNpgsql(Configuration["PostgresSql:ConnectionString"]));
+            services.AddDbContextFactory<PostgresSqlContext>(o => o.UseNpgsql(Configuration["PostgresSql:ConnectionString"]));
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IService<CalculateRollingRetentionXdayContext, IEnumerable<RollingRetentionXDay>>, RollingRetentionXdayService>();
             services.AddTransient<IService<CalculateUserLifetimeContext, IEnumerable<UserLifetime>>, LifetimeService>();
@@ -49,7 +48,7 @@ namespace ABTest
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IUserRepository db )
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IUserRepository db)
         {
             if (env.IsDevelopment())
             {
@@ -63,8 +62,8 @@ namespace ABTest
             }
             app.UseMiniProfiler();
             db.Migrate(CancellationToken.None).GetAwaiter().GetResult();
-   
-            app.UseHttpsRedirection();
+
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
@@ -79,7 +78,10 @@ namespace ABTest
                 });
                 endpoints.MapDefaultControllerRoute();
             });
-            
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
             app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
@@ -89,7 +91,7 @@ namespace ABTest
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
-            
+
         }
     }
 }
